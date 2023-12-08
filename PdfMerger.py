@@ -206,6 +206,6 @@ window.columnconfigure(3, weight = 1)
 # All the shortcuts
 window.bind('<Shift-Up>', move_file_up)
 window.bind('<Shift-Down>', move_file_down)
-window.bind('<BackSpace>', delete_file)
+window.bind('<Shift-BackSpace>', delete_file)
 # Let the window wait for any events
 window.mainloop()
