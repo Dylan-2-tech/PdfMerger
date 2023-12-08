@@ -163,9 +163,9 @@ window.title('PDF Merger')
 
   
 # Set window size
-window.geometry("500x500")
-window.minsize(200, 200)
-window.maxsize(700,700)
+window.geometry("700x400")
+window.minsize(600,300)
+
 
 #Set window background color
 window.config(background = "grey")
@@ -195,7 +195,7 @@ button_list_all_files = CTkButton(window, text = "Ajouter par dossier",
                         command = list_all_files)
 
 varFile_list = StringVar(value = file_list)
-ListBox_File = Listbox(window, width = 60, height = 10,
+ListBox_File = Listbox(window, width = 60, height = 20,
     activestyle = "none", selectbackground = "grey", bg = "lightgrey", fg = "black",
     borderwidth = 0, highlightthickness=0, listvariable = varFile_list)
   
