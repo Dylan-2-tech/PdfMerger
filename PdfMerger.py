@@ -23,7 +23,7 @@ from tkinter import StringVar
   
 # knowing on which operating system the software is running
 sysPlatform = sys.platform
-print(sysPlatform)
+print("système",sysPlatform)
 
 sys_directory = {
     "linux": "/",
@@ -32,10 +32,11 @@ sys_directory = {
 
 if sysPlatform in sys_directory.keys():
     separator = sys_directory[sysPlatform]
-    print("système de séparation de dossier:"+separator)
 else:
     separator = "\\"
-    print("système de séparation de dossier:"+separator)
+print("système de séparation de dossier:"+separator)
+
+
 
 file_list = []
 simplified_file_list = []
@@ -47,20 +48,19 @@ def simplify_name(file_name):
     return sep_name[len(sep_name)-1]
 
 def browseFiles():
-    filename = filedialog.askopenfilename(initialdir = separator,
-                                          title = "Choisissez un fichier",
-                                          filetypes = (("fichier pdf",
-                                                        "*.pdf*"),
-                                                       ("tout les fichiers",
-                                                        "*.*")))
-      
-    file_list.append(filename)
-    simplified_file_list.append(simplify_name(filename))
-    varFile_list.set(simplified_file_list)
-    print(filename)
-    print(file_list)
-    print(simplified_file_list)
-
+    try:
+        filename = filedialog.askopenfilename(initialdir = separator,
+                                              title = "Choisissez un fichier",
+                                              filetypes = (("fichier pdf",
+                                                            "*.pdf*"),
+                                                           ("tout les fichiers",
+                                                            "*.*")))
+          
+        file_list.append(filename)
+        simplified_file_list.append(simplify_name(filename))
+        varFile_list.set(simplified_file_list)
+    except AttributeError:
+        pass
     
 # Function that delete the file selected in the listBox
 def delete_file(event):
@@ -69,7 +69,7 @@ def delete_file(event):
         simplified_file_list.pop(ListBox_File.curselection()[0])
         varFile_list.set(simplified_file_list) # refresh the listBox
     except:
-        print("Vous devez séléctionner un fichier pour le supprimer")
+        label_INFO.configure(text = "Vous devez séléctionner un fichier pour le supprimer")
 
 # function that switch two element by they're index in a list 
 def switch(ListFile, i, o):
@@ -89,9 +89,9 @@ def move_file_up(event):
             
             label_INFO.configure(text = "fichier déplacer de 1 cran supérieur")
         elif selected_file_index == 0:
-            print("Le fichier ne peut pas monter plus que ça")
+            label_INFO.configure(text = "Le fichier ne peut pas monter plus que ça")
     except:
-        print("Vous devez séléctionner un fichier pour le remonter")
+        label_INFO.configure(text = "Vous devez séléctionner un fichier pour le remonter")
 
 def move_file_down(event):
     try:
@@ -103,55 +103,49 @@ def move_file_down(event):
             switch(simplified_file_list, selected_file_index, next_selected_file_index)
             varFile_list.set(simplified_file_list)
             
-            print("fichier déplacer de 1 cran inférieur")
         elif selected_file_index == len_file_list:
-            print("Le fichier ne peut pas descendre plus que ça")
+            label_INFO.configure(text = "Le fichier ne peut pas descendre plus que ça")
     except:
-        print("Vous devez séléctionner un fichier pour le remonter")
+        label_INFO.configure(text = "Vous devez séléctionner un fichier pour le remonter")
 
 #Function that append all pdf files in the listBox
 def list_all_files():
-    directory = filedialog.askdirectory(initialdir = separator,
-                                        title = "Choisissez un dossier")
-
-    if separator != "/":
-        directory.replace("/",separator)
     
-    list_of_all_files = glob.glob(directory+separator+"*.pdf")
-    for fileN in list_of_all_files:
-        file_list.append(fileN)
-        simplified_file_list.append(simplify_name(fileN))
-    varFile_list.set(simplified_file_list)
+    try:
+        directory = filedialog.askdirectory(initialdir = "home/dylantech/projets/PdfMerger",
+                                            title = "Choisissez un dossier")
 
+        list_of_all_files = glob.glob(directory+separator+"*.pdf")
+        for fileN in list_of_all_files:
+            file_list.append(fileN)
+            simplified_file_list.append(simplify_name(fileN))
+        varFile_list.set(simplified_file_list)
+    except TypeError:
+        pass
 
 # Function that merges pdf files from a list of files
 def merge_files(fl):
 
-    directory = filedialog.askdirectory(initialdir = separator,
-                                        title = "Choisissez un dossier")
+    if len(simplified_file_list) > 0:
 
-    if separator != "/":
-        directory.replace("/",separator)
-    directory += separator
-    
-    try:
-        merger = PdfWriter()
-        for pdf in fl:
-            merger.append(pdf)
-            
+        directory = filedialog.askdirectory(initialdir = separator,
+                                            title = "Choisissez un dossier")
+
         fileName = File_Name_Entry.get()
         if fileName == "":
-            print("Veuillez entrer un nom de fichier")
+            label_INFO.configure(text = "Veuillez entrer un nom de fichier")
         else:
-            print("nom de fichier =", fileName)
-            print(directory)
-            merger.write(directory + fileName + ".pdf")
+            merger = PdfWriter()
+            for pdf in fl:
+                merger.append(pdf)
+            
+            merger.write(directory + separator + fileName + ".pdf")
             merger.close()
+            label_INFO.configure(text = "correctly merged")
         
-        
-    except KeyboardInterrupt:
-        print("Vous avez quitté le logiciel")
-    print("correctly merged")
+    else:
+        label_INFO.configure(text = "Aucun fichier à fusionné")
+    
     
 # Create the root window
 window = ctk.CTk()
@@ -159,12 +153,9 @@ window = ctk.CTk()
 # Set window title
 window.title('PDF Merger')
   
-# Set icon
-
-  
 # Set window size
-window.geometry("700x400")
-window.minsize(600,300)
+window.geometry("700x450")
+window.minsize(600,400)
 
 
 #Set window background color
@@ -172,9 +163,10 @@ window.config(background = "grey")
   
 
 label_INFO = CTkLabel(window, 
-                            text = "",
+                            text = "", font = CTkFont(size = 25),
                             width = 100, height = 4, 
-                               fg_color = ("red", "red"))
+                            text_color = ("black"),
+                            fg_color = "grey")
 
 button_explore = CTkButton(window, 
                         text = "Ajouter un fichier",
@@ -199,7 +191,7 @@ ListBox_File = Listbox(window, width = 60, height = 20,
     activestyle = "none", selectbackground = "grey", bg = "lightgrey", fg = "black",
     borderwidth = 0, highlightthickness=0, listvariable = varFile_list)
   
-label_INFO.place(anchor = "s")
+label_INFO.grid(column = 2, row = 4)
 button_explore.grid(column = 1, row = 1)
 button_list_all_files.grid(column = 1, row = 2)
 File_Name_Entry.grid(column = 3, row = 1)
