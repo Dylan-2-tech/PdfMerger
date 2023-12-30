@@ -9,17 +9,27 @@ import sys
 from PyPDF2 import PdfWriter
 
 # importing the custom tkinter library
-import customtkinter as ctk
+from customtkinter import CTk
 from customtkinter import CTkLabel
 from customtkinter import CTkButton
 from customtkinter import CTkFrame
 from customtkinter import CTkFont
 from customtkinter import CTkEntry
+from customtkinter import CTkScrollableFrame
+from customtkinter import CTkScrollbar
+from customtkinter import CTkOptionMenu
+import customtkinter as ctk
 
 # Importing tkinter library
 from tkinter import filedialog
 from tkinter import Listbox
 from tkinter import StringVar
+
+from random import randint
+
+
+ctk.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
+ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
   
 # knowing on which operating system the software is running
 sysPlatform = sys.platform
@@ -37,7 +47,6 @@ else:
 print("système de séparation de dossier:"+separator)
 
 
-
 file_list = []
 simplified_file_list = []
 
@@ -50,10 +59,10 @@ def simplify_name(file_name):
 def browseFiles():
     try:
         filename = filedialog.askopenfilename(initialdir = separator,
-                                              title = "Choisissez un fichier",
-                                              filetypes = (("fichier pdf",
+                                              title = "Select a file",
+                                              filetypes = (("Pdf files",
                                                             "*.pdf*"),
-                                                           ("tout les fichiers",
+                                                           ("All files",
                                                             "*.*")))
           
         file_list.append(filename)
@@ -69,7 +78,7 @@ def delete_file(event):
         simplified_file_list.pop(ListBox_File.curselection()[0])
         varFile_list.set(simplified_file_list) # refresh the listBox
     except:
-        label_INFO.configure(text = "Vous devez séléctionner un fichier pour le supprimer")
+        INFOlabel.configure(text = "select a file to delete")
 
 # function that switch two element by they're index in a list 
 def switch(ListFile, i, o):
@@ -86,12 +95,13 @@ def move_file_up(event):
             switch(file_list, selected_file_index, next_selected_file_index)
             switch(simplified_file_list, selected_file_index, next_selected_file_index)
             varFile_list.set(simplified_file_list)
-            
-            label_INFO.configure(text = "fichier déplacer de 1 cran supérieur")
+            ListBox_File.select_set(next_selected_file_index)
+            ListBox_File.activate(next_selected_file_index)
+
         elif selected_file_index == 0:
-            label_INFO.configure(text = "Le fichier ne peut pas monter plus que ça")
+            INFOlabel.configure(text = "can't move up file")
     except:
-        label_INFO.configure(text = "Vous devez séléctionner un fichier pour le remonter")
+        INFOlabel.configure(text = "click on a file")
 
 def move_file_down(event):
     try:
@@ -99,21 +109,24 @@ def move_file_down(event):
         selected_file_index = ListBox_File.curselection()[0]
         next_selected_file_index = selected_file_index + 1
         if selected_file_index < len_file_list:
-            switch(file_list, selected_file_index, next_selected_file_index)
-            switch(simplified_file_list, selected_file_index, next_selected_file_index)
+            switch(file_list, next_selected_file_index, selected_file_index)
+            switch(simplified_file_list, next_selected_file_index, selected_file_index)
             varFile_list.set(simplified_file_list)
+            ListBox_File.select_set(next_selected_file_index)
+            ListBox_File.activate(next_selected_file_index)
+
             
         elif selected_file_index == len_file_list:
-            label_INFO.configure(text = "Le fichier ne peut pas descendre plus que ça")
+            INFOlabel.configure(text = "can't move down file")
     except:
-        label_INFO.configure(text = "Vous devez séléctionner un fichier pour le remonter")
+        INFOlabel.configure(text = "click on a file")
 
 #Function that append all pdf files in the listBox
 def list_all_files():
     
     try:
         directory = filedialog.askdirectory(initialdir = "home/dylantech/projets/PdfMerger",
-                                            title = "Choisissez un dossier")
+                                            title = "Select a directory")
 
         list_of_all_files = glob.glob(directory+separator+"*.pdf")
         for fileN in list_of_all_files:
@@ -129,11 +142,11 @@ def merge_files(fl):
     if len(simplified_file_list) > 0:
 
         directory = filedialog.askdirectory(initialdir = separator,
-                                            title = "Choisissez un dossier")
+                                            title = "Select a directory")
 
-        fileName = File_Name_Entry.get()
+        fileName = FileNameEntry.get()
         if fileName == "":
-            label_INFO.configure(text = "Veuillez entrer un nom de fichier")
+            INFOlabel.configure(text = "enter a file name")
         else:
             merger = PdfWriter()
             for pdf in fl:
@@ -141,71 +154,124 @@ def merge_files(fl):
             
             merger.write(directory + separator + fileName + ".pdf")
             merger.close()
-            label_INFO.configure(text = "correctly merged")
+            INFOlabel.configure(text = "correctly merged")
         
     else:
-        label_INFO.configure(text = "Aucun fichier à fusionné")
+        INFOlabel.configure(text = "no file to merge")
+
+
+def clear_info_label():
+    INFOlabel.configure(text = "")
+
+def sel(jsp):
+    index = randint(0,99)
     
+
+def change_appearance_mode_event(new_appearance_mode: str):
+        ctk.set_appearance_mode(new_appearance_mode)
+
+        if new_appearance_mode == "Dark":
+            ListBox_File.configure(bg = "grey", selectbackground = "lightgrey")
+        elif new_appearance_mode == "Light":
+            ListBox_File.configure(bg = "lightgrey", selectbackground = "grey")
+
     
 # Create the root window
-window = ctk.CTk()
-  
-# Set window title
+window = CTk()
 window.title('PDF Merger')
-  
-# Set window size
-window.geometry("700x450")
-window.minsize(600,400)
+window.geometry("1000x500+450+200")
+window.minsize(800, 500)
 
 
-#Set window background color
-window.config(background = "grey")
-  
+editColumn = CTkFrame (window, corner_radius = 10) 
+selectColumn = CTkFrame (window, corner_radius = 10) 
+mergeColumn = CTkFrame (window, corner_radius = 10) 
 
-label_INFO = CTkLabel(window, 
+# Adding label to the three columns
+selectColumnLabel = CTkLabel(selectColumn, text = "Select Files", font = CTkFont(size = 25))
+editColumnLabel = CTkLabel(editColumn, text = "Edit Files", font = CTkFont(size = 25))
+mergeColumnLabel = CTkLabel(mergeColumn, text = "Merge Files", font = CTkFont(size = 25))
+
+
+INFOlabel = CTkLabel(editColumn, 
                             text = "", font = CTkFont(size = 25),
-                            width = 100, height = 4, 
-                            text_color = ("black"),
-                            fg_color = "grey")
+                            pady = 5)
 
-button_explore = CTkButton(window, 
-                        text = "Ajouter un fichier",
+selectOneFileBtn = CTkButton(selectColumn, 
+                        text = "Ajouter un fichier", font = CTkFont(size = 20),
                         command = browseFiles)
 
-File_Name_Entry = CTkEntry(window)
-
-button_merge = CTkButton(window,
-                         text = "Fusionner les fichiers",
-                         command =lambda fl=file_list:merge_files(fl))
-  
-button_exit = CTkButton(window, 
-                     text = "Quitter",
-                     command = window.destroy)
-
-button_list_all_files = CTkButton(window, text = "Ajouter par dossier",
-                        fg_color = "purple",
+selectDirBtn = CTkButton(selectColumn, text = "Ajouter par dossier", font = CTkFont(size = 20),
+                        fg_color = "#711890", hover_color = ("#5A0976"),
                         command = list_all_files)
 
-varFile_list = StringVar(value = file_list)
-ListBox_File = Listbox(window, width = 60, height = 20,
-    activestyle = "none", selectbackground = "grey", bg = "lightgrey", fg = "black",
-    borderwidth = 0, highlightthickness=0, listvariable = varFile_list)
-  
-label_INFO.grid(column = 2, row = 4)
-button_explore.grid(column = 1, row = 1)
-button_list_all_files.grid(column = 1, row = 2)
-File_Name_Entry.grid(column = 3, row = 1)
-button_merge.grid(column = 3, row = 2)
-ListBox_File.grid(column = 2, row = 2, rowspan = 2)
-button_exit.grid(column = 1,row = 3)
 
-window.columnconfigure(1, weight = 1)
-window.columnconfigure(2, weight = 2)
-window.columnconfigure(3, weight = 1)
+#list box scrollbar
+yscrollbar = CTkScrollbar(editColumn)
+xscrollbar = CTkScrollbar(editColumn, orientation = 'horizontal')
+varFile_list = StringVar(value = file_list)
+ListBox_File = Listbox(editColumn, yscrollcommand = yscrollbar.set, xscrollcommand = xscrollbar.set,
+    activestyle = "underline", selectbackground = "lightgrey", bg = "grey", fg = "black",
+    borderwidth = 0, highlightthickness = 1, listvariable = varFile_list,
+    font = CTkFont(size = 17), highlightcolor = ("black"), highlightbackground = ("grey"))
+yscrollbar.configure(command = ListBox_File.yview)
+xscrollbar.configure(command = ListBox_File.xview)
+
+FileNameEntry = CTkEntry(mergeColumn, width = 200, font = CTkFont(size = 20))
+
+mergeBtn = CTkButton(mergeColumn,
+                         text = "Fusionner les fichiers", font = CTkFont(size = 20),
+                         command =lambda fl=file_list:merge_files(fl))
+  
+exitBtn = CTkButton(mergeColumn, 
+                     text = "Quitter", font = CTkFont(size = 20),
+                     command = window.destroy, fg_color = ("#DD2A2A"), hover_color = ("#B71212"))
+
+appearanceOptionemenu = CTkOptionMenu(window, values=["Dark", "System", "Light"],
+                                    command = change_appearance_mode_event)
+
+
+selectColumn.grid(row = 0, column = 0, sticky = 'nsew', padx = (10, 0), pady = (10, 10))
+editColumn.grid(row = 0, column = 1, rowspan = 2, sticky = 'nsew', padx = 10, pady = (10, 10))
+mergeColumn.grid(row = 0, column = 2, rowspan = 2, sticky = 'nsew', padx = (0, 10), pady = (10, 10))
+
+# Responsive columns
+window.grid_rowconfigure(0, weight = 1)
+window.grid_columnconfigure((0,2), weight = 1)  
+window.grid_columnconfigure(1, weight = 3)
+
+selectColumnLabel.grid(row = 0, column = 0, sticky = 'n', pady = 10)
+editColumnLabel.pack(pady = 10)
+mergeColumnLabel.grid(row = 0, column = 0, sticky = 'n', pady = 10)
+
+
+# placing the explore button in the select column(first one) 
+selectOneFileBtn.grid(row = 1, column = 0, pady = (40, 15))
+selectDirBtn.grid(row = 2, column = 0)
+appearanceOptionemenu.grid(row = 1, column = 0, sticky = "s", pady = (0, 10))
+
+# Placing the list of files in the edit column (middle one)
+INFOlabel.pack(side = "bottom", fill = 'x')
+xscrollbar.pack(side = "bottom", fill = 'x')
+ListBox_File.pack(side = "left", fill = "both", expand = True, pady = (10, 0))#.grid(row = 0, column = 0, sticky = 'nsew', pady = 10, padx = (10, 0))
+yscrollbar.pack(side = "right", fill = 'y')
+
+
+# Placing the merges buttons in the merge column (third one)
+FileNameEntry.grid(row = 1, column = 0, pady = (40, 30))
+mergeBtn.grid(row = 2, column = 0, pady = (0, 15))
+exitBtn.grid(row = 3, column = 0)
+
+
+# responsive columns grid
+selectColumn.grid_columnconfigure(0, weight = 1)
+mergeColumn.grid_columnconfigure(0, weight = 1)
+
 
 # All the shortcuts
 window.bind('<Shift-Up>', move_file_up)
 window.bind('<Shift-Down>', move_file_down)
 window.bind('<Shift-BackSpace>', delete_file)
+window.bind('<Return>', sel)
 # Let the window wait for any events
 window.mainloop()
