@@ -109,13 +109,12 @@ def move_file_down(event):
         selected_file_index = ListBox_File.curselection()[0]
         next_selected_file_index = selected_file_index + 1
         if selected_file_index < len_file_list:
-            switch(file_list, next_selected_file_index, selected_file_index)
-            switch(simplified_file_list, next_selected_file_index, selected_file_index)
+            switch(file_list, selected_file_index, next_selected_file_index)
+            switch(simplified_file_list, selected_file_index, next_selected_file_index)
             varFile_list.set(simplified_file_list)
             ListBox_File.select_set(next_selected_file_index)
             ListBox_File.activate(next_selected_file_index)
 
-            
         elif selected_file_index == len_file_list:
             INFOlabel.configure(text = "can't move down file")
     except:
@@ -265,10 +264,17 @@ selectColumn.grid_columnconfigure(0, weight = 1)
 mergeColumn.grid_columnconfigure(0, weight = 1)
 
 
+def sel(event):
+    index = randint(0,100)
+    ListBox_File.select_set(index)
+    ListBox_File.activate(index)
+
+
 # All the shortcuts
 window.bind('<Shift-Up>', move_file_up)
 window.bind('<Shift-Down>', move_file_down)
 window.bind('<Shift-BackSpace>', delete_file)
 window.bind('<Return>', sel)
+
 # Let the window wait for any events
 window.mainloop()
