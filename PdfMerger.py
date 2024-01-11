@@ -163,17 +163,14 @@ def merge_files(fl):
 def clear_info_label():
     INFOlabel.configure(text = "")
 
-def sel(jsp):
-    index = randint(0,99)
-    
 
 def change_appearance_mode_event(new_appearance_mode: str):
-        ctk.set_appearance_mode(new_appearance_mode)
+    ctk.set_appearance_mode(new_appearance_mode)
 
-        if new_appearance_mode == "Dark":
-            ListBox_File.configure(bg = "grey", selectbackground = "lightgrey")
-        elif new_appearance_mode == "Light":
-            ListBox_File.configure(bg = "lightgrey", selectbackground = "grey")
+    if new_appearance_mode == "Dark":
+        ListBox_File.configure(bg = "grey", selectbackground = "lightgrey")
+    elif new_appearance_mode == "Light":
+        ListBox_File.configure(bg = "lightgrey", selectbackground = "grey")
 
     
 # Create the root window
